@@ -3,21 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Book;
 use Illuminate\Http\Request;
 use App\Http\Resources\UserResource;
+use App\Http\Resources\BookResource;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\BookRequest;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $data = $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
-            'avatar' => 'nullable|image',
-        ]);
+        $data = $request->validated();
 
         $user = User::create([
             'name' => $data['name'],
@@ -33,12 +33,9 @@ class AuthController extends Controller
         return new UserResource($user);
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $data = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        $data = $request->validated();
 
         if (!Auth::attempt($data)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
@@ -51,5 +48,36 @@ class AuthController extends Controller
     {
         Auth::user()->tokens()->delete();
         return response()->json(['message' => 'Logged out']);
+    }
+
+    
+    public function index()
+    {
+        return BookResource::collection(Book::all());
+    }
+
+    public function store(BookRequest $request)
+    {
+        $data = $request->validated();
+        $book = Book::create($data);
+        return new BookResource($book);
+    }
+
+    public function show(Book $book)
+    {
+        return new BookResource($book);
+    }
+
+    public function update(BookRequest $request, Book $book)
+    {
+        $data = $request->validated();
+        $book->update($data);
+        return new BookResource($book);
+    }
+
+    public function destroy(Book $book)
+    {
+        $book->delete();
+        return response()->json(['message' => 'Book deleted successfully']);
     }
 }

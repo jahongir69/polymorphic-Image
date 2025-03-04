@@ -6,7 +6,7 @@ use App\Models\Book;
 use Illuminate\Http\Request;
 use App\Http\Resources\BookResource;
 
-class BookController extends AbstractController
+class BookController extends Controller
 {
     public function index(Request $request)
     {
